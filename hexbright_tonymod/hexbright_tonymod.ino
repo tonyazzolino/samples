@@ -4,21 +4,31 @@
  v2.4  Dec 6, 2012
  
  
- HML Mod - Modified by Tony Azzolino
+ TonyMod - Modified by Tony Azzolino
  v1.0  Dec 11, 2012: Added Dazzle, Fast Blink, and reworked activation order
- v1.1  Dec 13, 2012: Changed charging status to fading green led.
+ v1.1  Dec 13, 2012: Changed charging status to fading green LED.
+ v1.2  Dec 22, 2012: Tweaked green LED on charging.
+ v1.3  Dec 24, 2012: Merged LMH and HML and added program mode to switch between them
  
  Instructions:
  From off:
  
- Short tap for:              Long press for:
- High                        Dazzle
- Short tap for:              Short tap for:
- Medium                      Fast blinking
- Short tap for:              Short tap for:
- Low                         Slow blinking
- Short tap for:              Short tap for:
- Off                         Off
+ In LMH Mode          In HML Mode                 In both modes
+ -------------        -------------               --------------
+ Short tap for:       Short tap for:              Long press for:
+ Low                  High                        Dazzle
+ Short tap for:       Short tap for:              Short tap for:
+ Medium               Medium                      Fast blinking
+ Short tap for:       Short tap for:              Short tap for:
+ High                 Low                         Slow blinking
+ Short tap for:       Short tap for:              Short tap for:
+ Off                  Off                         Off
+ 
+ To enter program mode, press and hold the button from the off mode. The light will go
+ into Dazzle mode and then it will shut off. When you release the button, the green
+ LED on the back of the HexBright will indicate what mode it is in. It will fade in
+ for LMH mode and it will fade out for HML mode. When the green LED indicates the mode
+ you want, press and hold the button for a half second to save your selection.
  
  A long press while any mode is activated will shut the HexBright off.
  
@@ -26,6 +36,7 @@
 
 #include <math.h>
 #include <Wire.h>
+#include <EEPROM.h>
 
 // Settings
 #define OVERTEMP                340
@@ -48,16 +59,20 @@
 #define MODE_DAZZLING_PREVIEW   7
 #define MODE_BLINKFAST          8
 #define MODE_OFFHOLD            9
+#define MODE_PROGRAM_PREVIEW    10
+#define MODE_PROGRAM            11
 
 // State
 byte mode = 0;
+byte hmlbyte = 0;
+boolean hml = false;
 unsigned long btnTime = 0;
 boolean btnDown = false;
-int fadeDown = 0;
+boolean fadeDown = false;
 int fadeCount = 0;
 int fadeWait = 0;
 int fadeOffWait = 0;
-int gledOff = 0;
+boolean gledOff = false;
 
 void setup()
 {
@@ -82,6 +97,16 @@ void setup()
   btnDown = digitalRead(DPIN_RLED_SW);
   mode = MODE_OFF;
 
+  // Read HML mode from EEPROM
+  hmlbyte = EEPROM.read(0);
+  Serial.print("EEPROM byte 0 read. Contains ");
+  Serial.println(hmlbyte);
+  if (hmlbyte == 255 || hmlbyte == 0)
+    hml = false;
+  if (hmlbyte == 1)
+    hml = true;
+  Serial.print("Corrected HML value is ");
+  Serial.println(hml);
   Serial.println("Powered up!");
 }
 
@@ -92,73 +117,76 @@ void loop()
 
   // Check the state of the charge controller
   int chargeState = analogRead(APIN_CHARGE);
-  if (chargeState < 128)  // Low - charging
-  {
-    // digitalWrite(DPIN_GLED, (time&0x0100)?LOW:HIGH);
-    if (gledOff == 0)
+  if (mode != MODE_PROGRAM && mode != MODE_PROGRAM_PREVIEW){
+    if (chargeState < 128)  // Low - charging
     {
-      if (fadeDown == 0)
+      // digitalWrite(DPIN_GLED, (time&0x0100)?LOW:HIGH);
+      if (!gledOff)
       {
-        if (fadeWait == 20)
+        if (!fadeDown)
         {
-          analogWrite(DPIN_GLED, fadeCount++);
-          if (fadeCount == 255)
+          if (fadeWait == 35)
           {
-            fadeDown = 1;
+            analogWrite(DPIN_GLED, fadeCount++);
+            if (fadeCount == 255)
+            {
+              fadeDown = true;
+            }
+            fadeWait = 0;
           }
-          fadeWait = 0;
+          else
+          {
+            fadeWait++;
+          }
         }
-        else
+        else if (fadeDown)
         {
-          fadeWait++;
+          if (fadeWait == 25)
+          {
+            analogWrite(DPIN_GLED, fadeCount--);
+            if (fadeCount == 0)
+            {
+              fadeDown = false; 
+              gledOff = true;
+              digitalWrite(DPIN_GLED, LOW);
+            }
+            fadeWait = 0;
+          }
+          else
+          {
+            fadeWait++;
+          }
         }
-      }
-      else if (fadeDown == 1)
+      } 
+      else if (gledOff && fadeOffWait < 2000)
       {
-        if (fadeWait == 20)
-        {
-          analogWrite(DPIN_GLED, fadeCount--);
-          if (fadeCount == 0)
-          {
-            fadeDown = 0; 
-            gledOff = 1;
-            digitalWrite(DPIN_GLED, LOW);
-          }
-          fadeWait = 0;
-        }
-        else
-        {
-          fadeWait++;
-        }
+        fadeOffWait++;
       }
-    } 
-    else if (gledOff == 1 && fadeOffWait < 4000)
-    {
-      fadeOffWait++;
-    }
-    else if (gledOff == 1 && fadeOffWait == 4000)
-    {
-      fadeOffWait = 0;
-      gledOff = 0;
-    }
+      else if (gledOff && fadeOffWait == 2000)
+      {
+        fadeOffWait = 0;
+        gledOff = false;
+      }
 
+    }
+    else if (chargeState > 768) // High - charged
+    {
+      digitalWrite(DPIN_GLED, HIGH);
+    }
+    else // Hi-Z - shutdown
+    {
+      digitalWrite(DPIN_GLED, LOW);    
+    }
   }
-  else if (chargeState > 768) // High - charged
-  {
-    digitalWrite(DPIN_GLED, HIGH);
-  }
-  else // Hi-Z - shutdown
-  {
-    digitalWrite(DPIN_GLED, LOW);    
-  }
-
   // Check the temperature sensor
   if (time-lastTempTime > 1000)
   {
     lastTempTime = time;
     int temperature = analogRead(APIN_TEMP);
-    Serial.print("Temp: ");
-    Serial.println(temperature);
+    if (mode != MODE_PROGRAM){
+      Serial.print("Temp: ");
+      Serial.println(temperature);
+    }
     if (temperature > OVERTEMP && mode != MODE_OFF)
     {
       Serial.println("Overheating!");
@@ -192,6 +220,74 @@ void loop()
   case MODE_BLINKFAST:
     digitalWrite(DPIN_DRV_EN, (time%150)<75);
     break;
+  case MODE_PROGRAM:
+    if (!gledOff)
+    {
+      if (hml)
+      {
+        if (fadeWait > 25)
+        {
+          analogWrite(DPIN_GLED, fadeCount--);
+          fadeWait = 0;
+          if (fadeCount == 0)
+          {
+            digitalWrite(DPIN_GLED,LOW); 
+            gledOff = true;
+            // Serial.print("[");
+            // Serial.print(fadeCount);
+            // Serial.print(">");
+            fadeCount = 255;
+            // Serial.print(fadeCount);
+            fadeOffWait = 0;
+          }
+        }
+        else
+        {
+          fadeWait++;
+        }
+      }
+      if (!hml)
+      {
+        if (fadeWait > 25)
+        {
+          // Serial.println("Waited long enough, change the LED");
+          // Serial.print(">");
+          analogWrite(DPIN_GLED, fadeCount++);
+          // Serial.println(fadeCount);
+          fadeWait = 0;
+          if (fadeCount == 255)
+          {
+            digitalWrite(DPIN_GLED,LOW); 
+            gledOff = true;
+            // Serial.print("[");
+            // Serial.print(fadeCount);
+            // Serial.print(">");
+            fadeCount = 0;
+            // Serial.print(fadeCount);
+            fadeOffWait = 0;
+
+          }
+        }
+        else
+        {
+          fadeWait++;
+          // Serial.print(".");
+        }
+      }
+
+
+    }
+    else if (gledOff && fadeOffWait < 2000)
+    {
+      fadeOffWait++;
+    }
+    else if (gledOff && fadeOffWait == 2000)
+    {
+      gledOff = false;
+      // Serial.print("]");
+      // Serial.println(fadeCount);
+    }
+    break;
   }
 
   // Periodically pull down the button's pin, since
@@ -205,26 +301,34 @@ void loop()
   switch (mode)
   {
   case MODE_OFF:
-    if (btnDown && !newBtnDown && (time-btnTime)>20)
+    if (hml && btnDown && !newBtnDown && (time-btnTime)>20)
       newMode = MODE_HIGH;
+    if (!hml && btnDown && !newBtnDown && (time-btnTime)>20)
+      newMode = MODE_LOW;
     if (btnDown && newBtnDown && (time-btnTime)>500)
       newMode = MODE_DAZZLING_PREVIEW;
     break;
   case MODE_LOW:
     if (btnDown && !newBtnDown && (time-btnTime)>20)
       newMode = MODE_OFF;
+    if (!hml && btnDown && !newBtnDown && (time-btnTime)>20)
+      newMode = MODE_MED;
     if (btnDown && newBtnDown && (time-btnTime)>500)
       newMode = MODE_OFFHOLD;
     break;
   case MODE_MED:
     if (btnDown && !newBtnDown && (time-btnTime)>20)
       newMode = MODE_LOW;
+    if (!hml && btnDown && !newBtnDown && (time-btnTime)>20)
+      newMode = MODE_HIGH;
     if (btnDown && newBtnDown && (time-btnTime)>500)
       newMode = MODE_OFFHOLD;
     break;
   case MODE_HIGH:
     if (btnDown && !newBtnDown && (time-btnTime)>20)
       newMode = MODE_MED;
+    if (!hml && btnDown && !newBtnDown && (time-btnTime)>20)
+      newMode = MODE_OFF;
     if (btnDown && newBtnDown && (time-btnTime)>500)
       newMode = MODE_OFFHOLD;
     break;
@@ -232,6 +336,33 @@ void loop()
     // This mode exists just to ignore this button release.
     if (btnDown && !newBtnDown)
       newMode = MODE_DAZZLING;
+    if (btnDown && newBtnDown && (time-btnTime)>2000)
+      newMode = MODE_PROGRAM_PREVIEW;
+    break;
+  case MODE_PROGRAM_PREVIEW:
+    // This mode exists just to ignore this button release.
+    if (btnDown && !newBtnDown)
+      newMode = MODE_PROGRAM;
+    break;
+  case MODE_PROGRAM:
+    if (btnDown && !newBtnDown && (time-btnTime)>20)
+      {hml = !hml;Serial.print("HML set to ");Serial.println(hml);}
+    if (btnDown && newBtnDown && (time-btnTime)>500)
+    {
+      if (hml != hmlbyte){
+        Serial.println("hml doesn't match eeprom state");
+        Serial.print("hmlbyte = ");
+        Serial.println(hmlbyte);
+        Serial.print("hml = ");
+        Serial.println(hml);
+        hmlbyte = hml;
+        Serial.print("Writing ");
+        Serial.print(hmlbyte);
+        Serial.println(" to EEPROM");
+        EEPROM.write(0,hmlbyte);
+      }
+      newMode = MODE_OFFHOLD;
+    }
     break;
   case MODE_OFFHOLD:
     // This mode exists just to ignore this button release.
@@ -312,6 +443,28 @@ void loop()
       digitalWrite(DPIN_PWR, HIGH);
       digitalWrite(DPIN_DRV_MODE, HIGH);
       break;
+    case MODE_PROGRAM_PREVIEW:
+      Serial.println("Mode = Prog preview");
+      digitalWrite(DPIN_DRV_EN, LOW);
+      break;
+    case MODE_PROGRAM:
+      Serial.println("Mode = Program");
+      if (hml)
+      {
+        fadeCount = 255; 
+        fadeWait = 0; 
+        analogWrite(DPIN_GLED, fadeCount);
+        Serial.println("HML is true");
+      }
+      if (!hml)
+      {
+        fadeCount = 0; 
+        fadeWait = 0; 
+        digitalWrite(DPIN_GLED, LOW);
+        Serial.println("HML is false");
+      }
+      gledOff = false;
+      break;
     }
 
     mode = newMode;
@@ -325,5 +478,12 @@ void loop()
     delay(50);
   }
 }
+
+
+
+
+
+
+
 
 
