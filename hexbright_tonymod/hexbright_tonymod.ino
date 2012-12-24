@@ -9,6 +9,7 @@
  v1.1  Dec 13, 2012: Changed charging status to fading green LED.
  v1.2  Dec 22, 2012: Tweaked green LED on charging.
  v1.3  Dec 24, 2012: Merged LMH and HML and added program mode to switch between them
+ v1.4  Dec 24, 2012: Pulled improved dazzle from https://github.com/digitalmisery/HexBrightFLEX
  
  Instructions:
  From off:
@@ -73,6 +74,8 @@ int fadeCount = 0;
 int fadeWait = 0;
 int fadeOffWait = 0;
 boolean gledOff = false;
+boolean dazzle_on = true;
+long dazzle_period = 100;
 
 void setup()
 {
@@ -112,7 +115,7 @@ void setup()
 
 void loop()
 {
-  static unsigned long lastTime, lastTempTime;
+  static unsigned long lastTime, lastTempTime, lastDazzleTime;
   unsigned long time = millis();
 
   // Check the state of the charge controller
@@ -213,9 +216,13 @@ void loop()
     break;
   case MODE_DAZZLING:
   case MODE_DAZZLING_PREVIEW:
-    if (time-lastTime < 10) break;
-    lastTime = time;
-    digitalWrite(DPIN_DRV_EN, random(4)<1);
+    if (time - lastDazzleTime > dazzle_period)
+    {
+      digitalWrite(DPIN_DRV_EN, dazzle_on);
+      dazzle_on = !dazzle_on;
+      lastDazzleTime = time;
+      dazzle_period = random(25,100);
+    } 
     break;
   case MODE_BLINKFAST:
     digitalWrite(DPIN_DRV_EN, (time%150)<75);
