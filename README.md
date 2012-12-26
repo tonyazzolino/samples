@@ -6,11 +6,17 @@ hexbright_tonymod
 This software is a modification of the factory program. Button presses cycle
 through either off, low, medium, and high modes or off, high, medium and low modes
 depending on what mode the HexBright is in. A half second press from off will go to Dazzle,
-whereas taps from there will go to fast blink, slow blink, and off modes. To switch
-between LMH and HML modes, press the button for a full two seconds from the off mode. When
-the light stops flashing, it has then entered the program mode. The current mode will be
-indicated by the green LED on the rear of the HexBright. Tap the button in program mode to
-change modes. Press and hold the button for half a second to save your selection.
+whereas taps from there will go to fast blink, slow blink, and off modes. Mode skipping is also
+enabled in this sketch.
+To enter program mode, press and hold the button from the off mode. The light will go
+into Dazzle mode and then it will shut off after 4 seconds. When you release the button, the green
+LED on the back of the HexBright will either fade up for LMH mode or fade down for HML mode.
+When the green LED indicates the mode you want, press and hold the button for a half second to
+go to mode enable selection. In mode enable selection, the HexBright will first go to low or high,
+depending on the LMH/HML setting. The green LED will be lit if the mode is enabled and out if it is
+disabled. A tap of the button toggles the enabled/disabled status of the current mode, while a
+a 0.5 second press moves to the next mode. After slow blink mode, the light will save its settings
+if necessary, then turn off. 
 
 hexbright_factory
 -----------------
