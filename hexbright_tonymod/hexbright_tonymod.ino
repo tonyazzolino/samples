@@ -797,9 +797,13 @@ void loop()
 >>>>>>> rolled back because of bugs
       break;
     case MODE_PRE_PROGRAM:
+      pinMode(DPIN_PWR, OUTPUT);
+      digitalWrite(DPIN_PWR, HIGH);
       digitalWrite(DPIN_DRV_EN, LOW);
       break;
     case MODE_PROGRAM:
+      pinMode(DPIN_PWR, OUTPUT);
+      digitalWrite(DPIN_PWR, HIGH);
       Serial.println("Mode = Prog");
       if (hml)
       {
@@ -830,6 +834,7 @@ void loop()
     delay(50);
   }
 }
+
 
 
 
