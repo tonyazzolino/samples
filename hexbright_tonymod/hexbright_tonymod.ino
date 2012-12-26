@@ -114,6 +114,7 @@ void setup()
   mode = MODE_OFF;
 
   // Read HML mode from EEPROM
+<<<<<<< HEAD
   if (EEPROM.read(0) == 1) hml = true; else hml = false;
   if (EEPROM.read(1) == 1) highskip = true; else highskip = false;
   if (EEPROM.read(2) == 1) medskip = true; else medskip = false;
@@ -143,6 +144,44 @@ void setup()
     Serial.print("sblskip: ");
   Serial.println(sblskip);
   
+=======
+  if (EEPROM.read(0) == 1) hml = true; 
+  else hml = false;
+  if (EEPROM.read(1) == 1) highskip = true; 
+  else highskip = false;
+  if (EEPROM.read(2) == 1) medskip = true; 
+  else medskip = false;
+  if (EEPROM.read(3) == 1) lowskip = true; 
+  else lowskip = false;
+  if (EEPROM.read(4) == 1) dazskip = true; 
+  else dazskip = false;
+  if (EEPROM.read(5) == 1) fblskip = true; 
+  else fblskip = false;
+  if (EEPROM.read(6) == 1) sblskip = true; 
+  else sblskip = false;
+
+  Serial.print("HML: ");
+  Serial.println(hml);
+
+  Serial.print("highskip: ");
+  Serial.println(highskip);
+
+  Serial.print("medskip: ");
+  Serial.println(medskip);
+
+  Serial.print("lowskip: ");
+  Serial.println(lowskip);
+
+  Serial.print("dazskip: ");
+  Serial.println(dazskip);
+
+  Serial.print("fblskip: ");
+  Serial.println(fblskip);
+
+  Serial.print("sblskip: ");
+  Serial.println(sblskip);
+
+>>>>>>> rolled back because of bugs
   Serial.println("Powered up!");
 }
 
@@ -244,6 +283,7 @@ void loop()
   switch (mode)
   {
   case MODE_LOW:
+<<<<<<< HEAD
   if(mprog)digitalWrite(DPIN_GLED, !lowskip);
   break;
   case MODE_MED:
@@ -253,6 +293,17 @@ void loop()
     if(mprog)digitalWrite(DPIN_GLED, !highskip);
 
   break;
+=======
+    if(mprog)digitalWrite(DPIN_GLED, !lowskip);
+    break;
+  case MODE_MED:
+    if(mprog)digitalWrite(DPIN_GLED, !medskip);
+    break;
+  case MODE_HIGH:
+    if(mprog)digitalWrite(DPIN_GLED, !highskip);
+
+    break;
+>>>>>>> rolled back because of bugs
   case MODE_SBL:
   case MODE_PRE_SBL:
     if(mprog)digitalWrite(DPIN_GLED, !sblskip);
@@ -354,7 +405,14 @@ void loop()
 
   // Check for mode changes
   byte newMode = mode;
+<<<<<<< HEAD
   if (skiptomode != 255) {newMode = skiptomode; skiptomode = 255;}
+=======
+  if (skiptomode != 255) {
+    newMode = skiptomode; 
+    skiptomode = 255;
+  }
+>>>>>>> rolled back because of bugs
   byte newBtnDown = digitalRead(DPIN_RLED_SW);
   switch (mode)
   {
@@ -366,7 +424,11 @@ void loop()
     if (btnDown && newBtnDown && (time-btnTime)>500)
       newMode = MODE_PRE_DAZZLE;
     break;
+<<<<<<< HEAD
       case MODE_PRE_LOW:
+=======
+  case MODE_PRE_LOW:
+>>>>>>> rolled back because of bugs
     // This mode exists just to ignore this button release.
     if (btnDown && !newBtnDown)
       newMode = MODE_LOW;
@@ -379,13 +441,21 @@ void loop()
     if (!mprog && btnDown && newBtnDown && (time-btnTime)>500)
       newMode = MODE_OFFHOLD;
     if (mprog && btnDown && !newBtnDown && (time-btnTime)>20)
+<<<<<<< HEAD
         lowskip = !lowskip;
+=======
+      lowskip = !lowskip;
+>>>>>>> rolled back because of bugs
     if (mprog && hml && btnDown && newBtnDown && (time-btnTime)>500)
       newMode = MODE_PRE_DAZZLE;
     if (mprog && !hml && btnDown && newBtnDown && (time-btnTime)>500)
       newMode = MODE_PRE_MED;
     break;
+<<<<<<< HEAD
        case MODE_PRE_MED:
+=======
+  case MODE_PRE_MED:
+>>>>>>> rolled back because of bugs
     // This mode exists just to ignore this button release.
     if (btnDown && !newBtnDown)
       newMode = MODE_MED;
@@ -398,13 +468,21 @@ void loop()
     if (!mprog && btnDown && newBtnDown && (time-btnTime)>500)
       newMode = MODE_OFFHOLD;
     if (mprog && btnDown && !newBtnDown && (time-btnTime)>20)
+<<<<<<< HEAD
         medskip = !medskip;
+=======
+      medskip = !medskip;
+>>>>>>> rolled back because of bugs
     if (mprog && hml && btnDown && newBtnDown && (time-btnTime)>500)
       newMode = MODE_PRE_LOW;
     if (mprog && !hml && btnDown && newBtnDown && (time-btnTime)>500)
       newMode = MODE_PRE_HIGH;
     break;
+<<<<<<< HEAD
       case MODE_PRE_HIGH:
+=======
+  case MODE_PRE_HIGH:
+>>>>>>> rolled back because of bugs
     // This mode exists just to ignore this button release.
     if (btnDown && !newBtnDown)
       newMode = MODE_HIGH;
@@ -417,7 +495,11 @@ void loop()
     if (!mprog && btnDown && newBtnDown && (time-btnTime)>500)
       newMode = MODE_OFFHOLD;
     if (mprog && btnDown && !newBtnDown && (time-btnTime)>20)
+<<<<<<< HEAD
         highskip = !highskip;
+=======
+      highskip = !highskip;
+>>>>>>> rolled back because of bugs
     if (mprog && hml && btnDown && newBtnDown && (time-btnTime)>500)
       newMode = MODE_PRE_MED;
     if (mprog && !hml && btnDown && newBtnDown && (time-btnTime)>500)
@@ -437,10 +519,22 @@ void loop()
     break;
   case MODE_PROGRAM:
     if (btnDown && !newBtnDown && (time-btnTime)>20)
+<<<<<<< HEAD
       {hml = !hml;Serial.print("HML now ");Serial.println(hml);}
     if (btnDown && newBtnDown && (time-btnTime)>500)
     {
       if (hml) newMode = MODE_PRE_HIGH; else newMode = MODE_PRE_LOW;
+=======
+    {
+      hml = !hml;
+      Serial.print("HML now ");
+      Serial.println(hml);
+    }
+    if (btnDown && newBtnDown && (time-btnTime)>500)
+    {
+      if (hml) newMode = MODE_PRE_HIGH; 
+      else newMode = MODE_PRE_LOW;
+>>>>>>> rolled back because of bugs
       digitalWrite(DPIN_GLED, LOW);
       mprog = true;
     }
@@ -450,7 +544,11 @@ void loop()
     if (btnDown && !newBtnDown)
       newMode = MODE_OFF;
     break;
+<<<<<<< HEAD
         case MODE_PRE_SBL:
+=======
+  case MODE_PRE_SBL:
+>>>>>>> rolled back because of bugs
     // This mode exists just to ignore this button release.
     if (btnDown && !newBtnDown)
       newMode = MODE_SBL;
@@ -459,6 +557,7 @@ void loop()
     if (!mprog && btnDown && !newBtnDown && (time-btnTime)>20)
       newMode = MODE_OFF;
     if (!mprog && btnDown && newBtnDown && (time-btnTime)>500)
+<<<<<<< HEAD
       newMode = MODE_OFFHOLD;
     if (mprog && btnDown && !newBtnDown && (time-btnTime)>20)
       sblskip = !sblskip;
@@ -482,6 +581,31 @@ void loop()
     break;
     
         case MODE_PRE_FBL:
+=======
+      newMode = MODE_OFFHOLD;
+    if (mprog && btnDown && !newBtnDown && (time-btnTime)>20)
+      sblskip = !sblskip;
+    if (mprog && btnDown && newBtnDown && (time-btnTime)>500)
+    {
+      if (hml != EEPROM.read(0)) EEPROM.write(0, hml);
+      if (highskip != EEPROM.read(1)) EEPROM.write(1, highskip);
+      if (medskip != EEPROM.read(2)) EEPROM.write(2, medskip);
+      if (lowskip != EEPROM.read(3)) EEPROM.write(3, lowskip);
+      if (dazskip != EEPROM.read(4)) EEPROM.write(4, dazskip);
+      if (fblskip != EEPROM.read(5)) EEPROM.write(5, fblskip);
+      if (sblskip != EEPROM.read(6)) EEPROM.write(6, sblskip);
+      gledOff=false;
+      fadeCount=0;
+      fadeDown=false;
+      fadeWait=0;
+      fadeOffWait=0;
+      mprog = false;
+      newMode = MODE_OFFHOLD;
+    }
+    break;
+
+  case MODE_PRE_FBL:
+>>>>>>> rolled back because of bugs
     // This mode exists just to ignore this button release.
     if (btnDown && !newBtnDown)
       newMode = MODE_FBL;
@@ -523,6 +647,7 @@ void loop()
       break;
     case MODE_LOW:
     case MODE_PRE_LOW:
+<<<<<<< HEAD
     if(!mprog && lowskip && hml) {Serial.println("L>O"); skiptomode = MODE_OFF;}
     else if (!mprog && lowskip && !hml) {Serial.println("L>M"); skiptomode = MODE_MED;}
     else{
@@ -579,6 +704,97 @@ void loop()
       pinMode(DPIN_PWR, OUTPUT);
       digitalWrite(DPIN_PWR, HIGH);
       digitalWrite(DPIN_DRV_MODE, HIGH);}
+=======
+      if(!mprog && lowskip && hml) {
+        Serial.println("L>O"); 
+        skiptomode = MODE_OFF;
+      }
+      else if (!mprog && lowskip && !hml) {
+        Serial.println("L>M"); 
+        skiptomode = MODE_MED;
+      }
+      else{
+        Serial.println("Mode = low");
+        pinMode(DPIN_PWR, OUTPUT);
+        digitalWrite(DPIN_PWR, HIGH);
+        digitalWrite(DPIN_DRV_MODE, LOW);
+        analogWrite(DPIN_DRV_EN, 64);
+      }
+      break;
+    case MODE_MED:
+    case MODE_PRE_MED:
+      if(!mprog && medskip && hml) {
+        Serial.println("M>L"); 
+        skiptomode = MODE_LOW;
+      }
+      else if (!mprog && medskip && !hml) {
+        Serial.println("M>H"); 
+        skiptomode = MODE_HIGH;
+      }
+      else{
+        Serial.println("Mode = medium");
+        pinMode(DPIN_PWR, OUTPUT);
+        digitalWrite(DPIN_PWR, HIGH);
+        digitalWrite(DPIN_DRV_MODE, LOW);
+        analogWrite(DPIN_DRV_EN, 255);
+      }
+      break;
+    case MODE_HIGH:
+    case MODE_PRE_HIGH:
+      if(!mprog && highskip && hml) {
+        Serial.println("H>M"); 
+        skiptomode = MODE_MED;
+      }
+      else if (!mprog && highskip && !hml) {
+        Serial.println("H>O"); 
+        skiptomode = MODE_OFF;
+      }
+      else{
+        Serial.println("Mode = high");
+        pinMode(DPIN_PWR, OUTPUT);
+        digitalWrite(DPIN_PWR, HIGH);
+        digitalWrite(DPIN_DRV_MODE, HIGH);
+        analogWrite(DPIN_DRV_EN, 255);
+      }
+      break;
+    case MODE_SBL:
+    case MODE_PRE_SBL:
+      if(!mprog && sblskip) {
+        Serial.println("S>O"); 
+        skiptomode = MODE_OFF;
+      }
+      else {
+        Serial.println("Mode = SBl");
+        pinMode(DPIN_PWR, OUTPUT);
+        digitalWrite(DPIN_PWR, HIGH);
+        digitalWrite(DPIN_DRV_MODE, HIGH);
+      }
+      break;
+    case MODE_DAZZLE:
+      if(!mprog && dazskip) {
+        Serial.println("D>F"); 
+        skiptomode = MODE_FBL;
+      }
+      else {
+        Serial.println("Mode = Daz");
+        pinMode(DPIN_PWR, OUTPUT);
+        digitalWrite(DPIN_PWR, HIGH);
+        digitalWrite(DPIN_DRV_MODE, HIGH);
+      }
+      break;
+    case MODE_FBL:
+    case MODE_PRE_FBL:
+      if(!mprog && fblskip) {
+        Serial.println("F>S"); 
+        skiptomode = MODE_SBL;
+      }
+      else {
+        Serial.println("Mode = FBl");
+        pinMode(DPIN_PWR, OUTPUT);
+        digitalWrite(DPIN_PWR, HIGH);
+        digitalWrite(DPIN_DRV_MODE, HIGH);
+      }
+>>>>>>> rolled back because of bugs
       break;
     case MODE_PRE_PROGRAM:
       digitalWrite(DPIN_DRV_EN, LOW);
@@ -614,6 +830,7 @@ void loop()
     delay(50);
   }
 }
+
 
 
 
