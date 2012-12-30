@@ -282,7 +282,7 @@ void loop()
   case MODE_PRE_FBL:
     if(mprog)digitalWrite(DPIN_GLED, !fblskip);
 
-    digitalWrite(DPIN_DRV_EN, (time%150)<75);
+    digitalWrite(DPIN_DRV_EN, (time%75)<8);
     break;
   case MODE_PROGRAM:
     if (!gledOff)
@@ -603,6 +603,9 @@ void loop()
         digitalWrite(DPIN_DRV_MODE, HIGH);
       }
       break;
+    case MODE_PRE_DAZZLE:
+      digitalWrite(DPIN_DRV_MODE, HIGH);
+      break;
     case MODE_DAZZLE:
       if(!mprog && dazskip) {
         Serial.println("D>F"); 
@@ -666,6 +669,7 @@ void loop()
     delay(50);
   }
 }
+
 
 
 
